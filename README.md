@@ -38,7 +38,7 @@ NodeManager - класс, позволяющий пользователю изв
 * **show arg1** - выводит value arg1-го Node из буфера, а также value каждого из его детей(nodes)
 * **size** - выводит размер буфера
 * **list** - выводит value каждого Node из буфера
-* **change arg1 arg2** - заменяет value arg1-го Node из буфера на arg2
+* **set arg1 arg2** - заменяет value arg1-го Node из буфера на arg2
 * **take_child arg1 arg2** - добавляет в конец буфера arg2-го ребенка arg1-го элемента буфера
 * **add_child arg1 arg2** - добавляет arg2-й элемент буфера в nodes arg1-го элемента
 * **rm_child arg1 arg2** - удаляет arg2-го ребенка из nodes arg1-го элемента буфера
