@@ -2,7 +2,7 @@ import java.io.File
 import java.lang.Exception
 import java.lang.IllegalArgumentException
 
-open class Node(var value: String, var nodes: MutableList<Node> = mutableListOf())
+class Node(var value: String, var nodes: MutableList<Node> = mutableListOf())
 
 fun loadFromFile(fileName: String): Node? {
     return try {
@@ -32,7 +32,7 @@ fun loadFromFile(fileName: String): Node? {
 
 fun saveToFile(fileName: String, root: Node?) {
     try {
-        val writer = File(fileName).bufferedWriter()
+        val writer = File(fileName).printWriter()
         if(root == null) {
             writer.write(0)
             return
@@ -50,18 +50,15 @@ fun saveToFile(fileName: String, root: Node?) {
             }
         }; dfs(root)
 
-        writer.write(reachableNodes.size.toString())
-        writer.newLine()
+        writer.println(reachableNodes.size.toString())
         for (i in reachableNodes) {
-            writer.write(i.value)
-            writer.newLine()
+            writer.println(i.value)
         }
         for (i in reachableNodes) {
             for(child in i.nodes) {
-                number[child]?.let { writer.write(it.toString()) }
-                writer.write(" ")
+                number[child]?.let { writer.print("$it ") }
             }
-            writer.newLine()
+            writer.println()
         }
 
         writer.close()
@@ -69,7 +66,7 @@ fun saveToFile(fileName: String, root: Node?) {
     catch (e: Exception) {}
 }
 
-class NodeOperator {
+class NodeManager {
     private val savedNodes: ArrayList<Node> = arrayListOf()
 
     private fun checkIndex(nodeInd: Int) {
@@ -103,12 +100,21 @@ class NodeOperator {
         savedNodes.removeAt(index)
     }
 
-    fun showNode(index: Int): Node {
+    fun showChildren(index: Int): List<String> {
         checkIndex(index)
-        return savedNodes[index]
+        val ans = mutableListOf<String>()
+        for (i in savedNodes[index].nodes) {
+            ans.add(i.value)
+        }
+        return ans
     }
 
-    fun changeValue(index: Int, newValue: String) {
+    fun getValue(index: Int): String {
+        checkIndex(index)
+        return savedNodes[index].value
+    }
+
+    fun setValue(index: Int, newValue: String) {
         checkIndex(index)
         savedNodes[index].value = newValue
     }
@@ -134,7 +140,7 @@ class NodeOperator {
 
 
 fun main() {
-    val nodeOperator = NodeOperator()
+    val nodeManager = NodeManager()
     var line: String?
     while(true) {
         print("> ")
@@ -142,7 +148,7 @@ fun main() {
         if(line == null) {
             break
         }
-        val args = line.split(" ")
+        val args = line.split(" ").filter { it.isNotEmpty() }
         if(args.isEmpty()) {
             continue
         }
@@ -152,77 +158,76 @@ fun main() {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.addNode(args[1])
+                nodeManager.addNode(args[1])
             }
             "load" -> {
                 if(args.size < 2) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.loadNode(args[1])
+                nodeManager.loadNode(args[1])
             }
             "save" -> {
                 if(args.size < 3) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.saveNode(args[1].toInt(), args[2])
+                nodeManager.saveNode(args[1].toInt(), args[2])
             }
             "rm" -> {
                 if(args.size < 2) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.removeNode(args[1].toInt())
+                nodeManager.removeNode(args[1].toInt())
             }
             "show" -> {
                 if(args.size < 2) {
                     println("Wrong number of arguments")
                     continue
                 }
-                val ans = nodeOperator.showNode(args[1].toInt())
-                println(ans.value)
-                for (i in ans.nodes) {
-                    print(i.value + " ")
+                println(nodeManager.getValue(args[1].toInt()))
+                for (i in nodeManager.showChildren(args[1].toInt())) {
+                    print("$i ")
                 }
                 println()
             }
             "size" -> {
-                println(nodeOperator.getSize())
+                println(nodeManager.getSize())
             }
             "list" -> {
-                for (i in 0 until nodeOperator.getSize()) {
-                    print(nodeOperator.showNode(i).value + " ")
+                for (i in 0 until nodeManager.getSize()) {
+                    print(nodeManager.getValue(i) + " ")
                 }
                 println()
             }
-            "change" -> {
+            "set" -> {
                 if(args.size < 3) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.changeValue(args[1].toInt(), args[2])
+                nodeManager.setValue(args[1].toInt(), args[2])
             }
             "take_child" -> {
                 if(args.size < 3) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.takeChild(args[1].toInt(), args[2].toInt())
+                nodeManager.takeChild(args[1].toInt(), args[2].toInt())
             }
             "add_child" -> {
                 if(args.size < 3) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.addChild(args[1].toInt(), args[2].toInt())
+                nodeManager.addChild(args[1].toInt(), args[2].toInt())
             }
             "rm_child" -> {
                 if(args.size < 3) {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.removeChild(args[1].toInt(), args[2].toInt())
+                nodeManager.removeChild(args[1].toInt(), args[2].toInt())
             }
             "exit" -> {
                 break
