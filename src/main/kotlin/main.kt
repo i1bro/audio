@@ -1,6 +1,7 @@
 import java.io.File
 import java.lang.Exception
 import java.lang.IllegalArgumentException
+import kotlin.system.exitProcess
 
 class Node(var value: String, var nodes: MutableList<Node> = mutableListOf())
 
@@ -9,6 +10,9 @@ fun loadFromFile(fileName: String): Node? {
         val loadedNodes: ArrayList<Node> = arrayListOf()
         val reader = File(fileName).bufferedReader()
         val size = reader.readLine().toInt()
+        if(size == 0) {
+            throw IllegalArgumentException("Something went wrong while reading from file $fileName")
+        }
         for (i in 0 until size) {
             loadedNodes.add(Node(reader.readLine()))
         }
@@ -26,7 +30,7 @@ fun loadFromFile(fileName: String): Node? {
         loadedNodes[0]
     }
     catch (e: Exception) {
-        null
+        throw IllegalArgumentException("Something went wrong while reading from file $fileName")
     }
 }
 
@@ -63,7 +67,9 @@ fun saveToFile(fileName: String, root: Node?) {
 
         writer.close()
     }
-    catch (e: Exception) {}
+    catch (e: Exception) {
+        throw IllegalArgumentException("Something went wrong while writing to file $fileName")
+    }
 }
 
 class NodeManager {
@@ -138,6 +144,75 @@ class NodeManager {
     }
 }
 
+fun executeCommand(args: List<String>, nodeManager: NodeManager) {
+
+    fun checkArgsSize(n: Int) {
+        if (args.size != n + 1) {
+            throw IllegalArgumentException("Wrong number of arguments")
+        }
+    }
+
+    when (args[0]) {
+        "add" -> {
+            checkArgsSize(1)
+            nodeManager.addNode(args[1])
+        }
+        "load" -> {
+            checkArgsSize(1)
+            nodeManager.loadNode(args[1])
+        }
+        "save" -> {
+            checkArgsSize(2)
+            nodeManager.saveNode(args[1].toInt(), args[2])
+        }
+        "rm" -> {
+            checkArgsSize(1)
+            nodeManager.removeNode(args[1].toInt())
+        }
+        "show" -> {
+            checkArgsSize(1)
+            println(nodeManager.getValue(args[1].toInt()))
+            for (i in nodeManager.showChildren(args[1].toInt())) {
+                print("$i ")
+            }
+            println()
+        }
+        "size" -> {
+            checkArgsSize(0)
+            println(nodeManager.getSize())
+        }
+        "list" -> {
+            checkArgsSize(0)
+            for (i in 0 until nodeManager.getSize()) {
+                print(nodeManager.getValue(i) + " ")
+            }
+            println()
+        }
+        "set" -> {
+            checkArgsSize(2)
+            nodeManager.setValue(args[1].toInt(), args[2])
+        }
+        "take_child" -> {
+            checkArgsSize(2)
+            nodeManager.takeChild(args[1].toInt(), args[2].toInt())
+        }
+        "add_child" -> {
+            checkArgsSize(2)
+            nodeManager.addChild(args[1].toInt(), args[2].toInt())
+        }
+        "rm_child" -> {
+            checkArgsSize(2)
+            nodeManager.removeChild(args[1].toInt(), args[2].toInt())
+        }
+        "exit" -> {
+            exitProcess(0)
+        }
+        else -> {
+            throw IllegalArgumentException("Unknown command " + args[0])
+        }
+    }
+}
+
 
 fun main() {
     val nodeManager = NodeManager()
@@ -152,90 +227,12 @@ fun main() {
         if(args.isEmpty()) {
             continue
         }
-        when (args[0]) {
-            "add" -> {
-                if(args.size < 2) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.addNode(args[1])
-            }
-            "load" -> {
-                if(args.size < 2) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.loadNode(args[1])
-            }
-            "save" -> {
-                if(args.size < 3) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.saveNode(args[1].toInt(), args[2])
-            }
-            "rm" -> {
-                if(args.size < 2) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.removeNode(args[1].toInt())
-            }
-            "show" -> {
-                if(args.size < 2) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                println(nodeManager.getValue(args[1].toInt()))
-                for (i in nodeManager.showChildren(args[1].toInt())) {
-                    print("$i ")
-                }
-                println()
-            }
-            "size" -> {
-                println(nodeManager.getSize())
-            }
-            "list" -> {
-                for (i in 0 until nodeManager.getSize()) {
-                    print(nodeManager.getValue(i) + " ")
-                }
-                println()
-            }
-            "set" -> {
-                if(args.size < 3) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.setValue(args[1].toInt(), args[2])
-            }
-            "take_child" -> {
-                if(args.size < 3) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.takeChild(args[1].toInt(), args[2].toInt())
-            }
-            "add_child" -> {
-                if(args.size < 3) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.addChild(args[1].toInt(), args[2].toInt())
-            }
-            "rm_child" -> {
-                if(args.size < 3) {
-                    println("Wrong number of arguments")
-                    continue
-                }
-                nodeManager.removeChild(args[1].toInt(), args[2].toInt())
-            }
-            "exit" -> {
-                break
-            }
-            else -> {
-                println("Unknown command " + args[0])
-                continue
-            }
+        try {
+            executeCommand(args, nodeManager)
+        } catch (e: IllegalArgumentException) {
+            println(e.message)
+        } catch (e: Exception) {
+            println("Unexpected Exception")
         }
     }
 }
