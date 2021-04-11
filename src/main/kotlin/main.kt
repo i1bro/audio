@@ -85,7 +85,7 @@ class NodeOperator {
         }
     }
 
-    fun addIsolatedNode(value: String) {
+    fun addNode(value: String) {
         savedNodes.add(Node(value))
     }
 
@@ -152,7 +152,7 @@ fun main() {
                     println("Wrong number of arguments")
                     continue
                 }
-                nodeOperator.addIsolatedNode(args[1])
+                nodeOperator.addNode(args[1])
             }
             "load" -> {
                 if(args.size < 2) {
@@ -192,7 +192,7 @@ fun main() {
             }
             "list" -> {
                 for (i in 0 until nodeOperator.getSize()) {
-                    print(nodeOperator.showNode(args[1].toInt()).value + " ")
+                    print(nodeOperator.showNode(i).value + " ")
                 }
                 println()
             }
@@ -223,6 +223,9 @@ fun main() {
                     continue
                 }
                 nodeOperator.removeChild(args[1].toInt(), args[2].toInt())
+            }
+            "exit" -> {
+                break
             }
             else -> {
                 println("Unknown command " + args[0])
